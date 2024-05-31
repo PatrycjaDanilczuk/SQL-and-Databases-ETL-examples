@@ -44,7 +44,7 @@ Solution: [2.1. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-co
 ### Task 2.2. Cumulative sum
 Enrich 2.1 query with the cumulative_sum of the total amount with tax earned per country & region.
 
-Solution: [2.2. query]
+Solution: [2.2. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/2.2.%20query)
 
 ### Task 2.3. Sales rank
 Enrich 2.2 query by adding ‘sales_rank’ column that ranks rows from best to worst for each country based on total amount with tax earned each month. I.e. the month where the (US, Southwest) region made the highest total amount with tax earned will be ranked 1 for that region and vice versa.
