@@ -34,7 +34,7 @@ AddressLine1	address_no	Address_st
 '8603 Elmhurst Lane'	8603	Elmhurst Lane
 Order the output by country, state and date_last_order.
 
-Solution: [1.4. query]
+Solution: [1.4. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/1.4.%20query)
 
 ### Task 2.1. Sales by territory
 Create a query of monthly sales numbers in each Country & region. Include in the query a number of orders, customers and sales persons in each month with a total amount with tax earned. Sales numbers from all types of customers are required. 
