@@ -22,7 +22,8 @@ Solution: [1.2. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-co
 
 ### Task 1.3. Active and Inactive customers
 Enrich your original 1.1 SELECT by creating a new column in the view that marks active & inactive customers based on whether they have ordered anything during the last 365 days.
-Solution: [1.3. query]
+
+Solution: [1.3. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/1.3.%20query)
 
 ### Task 1.4. North America
 Business would like to extract data on all active customers from North America. Only customers that have either ordered no less than 2500 in total amount (with Tax) or ordered 5 + times should be presented.
