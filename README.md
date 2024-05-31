@@ -13,7 +13,7 @@ Contact information : Email, phone, account number, CustomerType.
 Location information : City, State & Country, address.
 Sales: number of orders, total amount (with Tax), date of the last order.
 
-Solution: [1.1. query] 
+Solution: [1.1. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/1.1.%20query)
 
 ### Task 1.2. No orders in 365 days
 Get the data from the first query for the top 200 customers with the highest total amount (with tax) who have not ordered for the last 365 days.
