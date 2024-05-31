@@ -49,7 +49,7 @@ Solution: [2.2. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-co
 ### Task 2.3. Sales rank
 Enrich 2.2 query by adding ‘sales_rank’ column that ranks rows from best to worst for each country based on total amount with tax earned each month. I.e. the month where the (US, Southwest) region made the highest total amount with tax earned will be ranked 1 for that region and vice versa.
 
-Solution: [2.3. query]
+Solution: [2.3. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/2.3.%20query)
 
 ### Task 2.4. Taxes
 Enrich 2.3 query by adding taxes on a country level:
