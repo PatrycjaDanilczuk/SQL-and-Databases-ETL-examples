@@ -1,0 +1,84 @@
+/* copying query 2.3 and wrapping in cte*/
+
+WITH sales_tab AS
+(SELECT
+  DATE_TRUNC(s.OrderDate, MONTH) as order_month,
+  t.CountryRegionCode AS country_region_code,
+  t.Name AS region_name,
+  COUNT(DISTINCT(SalesOrderID)) AS number_orders,
+  COUNT(DISTINCT(s.CustomerID)) AS number_customers,
+  COUNT(DISTINCT(s.SalesPersonID)) AS no_salesPersons,
+  ROUND(SUM(s.TotalDue), 0) AS total_w_tax,
+  /*adding territoryID column, also adding in grouping*/
+  s.TerritoryID AS territory_id
+FROM `adwentureworks_db.salesorderheader` s
+JOIN `adwentureworks_db.salesterritory` t
+ON t.TerritoryID = s.TerritoryID
+GROUP BY 1,2,3,8),
+
+/*wrapping query 2.3 into cte sales_tab2*/
+
+sales_tab2 AS
+(SELECT
+  sales_tab.order_month,
+  sales_tab.country_region_code,
+  sales_tab.region_name,
+  sales_tab.number_orders,
+  sales_tab.number_customers,
+  sales_tab.no_salesPersons,
+  sales_tab.total_w_tax,
+  RANK() OVER (PARTITION BY sales_tab.country_region_code ORDER BY sales_tab.total_w_tax DESC) AS sales_rank,
+  SUM(total_w_tax) OVER (PARTITION BY sales_tab.country_region_code ORDER BY sales_tab.order_month) AS cumulative_sum,
+  sales_tab.territory_id
+FROM sales_tab
+GROUP BY 1, 2, 3, 4, 5, 6, 7,10),
+
+
+/* creating cte tax_tab to retrieve data on taxes rates*/
+
+tax_tab AS (SELECT DISTINCT
+  sp.StateProvinceID,
+  sp.StateProvinceCode,
+  sp.CountryRegionCode,
+  sp.Name,
+  sp.TerritoryID,
+  /*using MAX function to retrieve data on higher tax for states that have multiple tax rates ("Hint: If a state has multiple tax rates, choose the higher one. Do not double count a state in country average rate calculation if it has multiple tax rates"); query without MAX function on tax rate produced 184 rows result, after applying MAX function query result is 181 rows*/
+  MAX(st.TaxRate) AS tax_rate
+FROM `adwentureworks_db.stateprovince`sp
+/* not all provinces have data on taxes, so LEFT JOIN used to keep all states (nulls expected for states without data on taxes*/
+LEFT JOIN `adwentureworks_db.salestaxrate` st
+ON sp.StateProvinceID = st.StateProvinceID
+GROUP BY 1, 2, 3, 4, 5),
+
+/* creating cte tax_tab2 to get data for required new columns maen_tax_rate and perc_provinces_w_tax; query result 181*/
+tax_tab2 AS
+(SELECT
+  StateProvinceID,
+  StateProvinceCode,
+  CountryRegionCode,
+  Name,
+  TerritoryID,
+  tax_rate,
+  /* creating mean_tax_rate per country column using window function with AVG aggregation*/
+  ROUND(AVG(tax_rate) OVER (PARTITION BY CountryRegionCode), 1) AS mean_tax_rate,
+  /*creating perc_provinces_w_tax column representing the percentage of provinces with available tax rates for each country - used COUNT values in tax rate column divided by COUNT rows (values and nulls) with window function to retrieve partition by country*/
+  ROUND(COUNT(tax_rate) OVER (PARTITION BY CountryregionCode)/COUNT(*) OVER (PARTITION BY CountryRegionCode), 2) AS perc_provinces_w_tax
+FROM tax_tab)
+
+/* joining tax_tab2 with sales_tab2 to get the resulting table*/
+
+SELECT DISTINCT
+  sales_tab2.order_month,
+  sales_tab2.country_region_code,
+  sales_tab2.region_name,
+  sales_tab2.number_orders,
+  sales_tab2.number_customers,
+  sales_tab2.no_salesPersons,
+  sales_tab2.total_w_tax,
+  sales_tab2.sales_rank,
+  sales_tab2.cumulative_sum,
+  tax_tab2.mean_tax_rate,
+  tax_tab2.perc_provinces_w_tax
+FROM sales_tab2
+LEFT JOIN tax_tab2
+ON sales_tab2.country_region_code = tax_tab2.countryregioncode;

@@ -1,0 +1,31 @@
+/*copying query 2.2*/
+
+WITH sales_tab AS
+  (SELECT
+  DATE_TRUNC(s.OrderDate, MONTH) as order_month,
+  t.CountryRegionCode AS country_region_code,
+  t.Name AS region_name,
+  COUNT(DISTINCT(SalesOrderID)) AS number_orders,
+  COUNT(DISTINCT(s.CustomerID)) AS number_customers,
+  COUNT(DISTINCT(s.SalesPersonID)) AS no_salesPersons,
+  ROUND(SUM(s.TotalDue), 0) AS total_w_tax
+FROM `adwentureworks_db.salesorderheader` s
+JOIN `adwentureworks_db.salesterritory` t
+ON t.TerritoryID = s.TerritoryID
+GROUP BY 1,2,3)
+
+/*solution*/
+
+SELECT
+sales_tab.order_month,
+sales_tab.country_region_code,
+sales_tab.region_name,
+sales_tab.number_orders,
+sales_tab.number_customers,
+sales_tab.no_salesPersons,
+sales_tab.total_w_tax,
+/*adding rank*/
+RANK() OVER (PARTITION BY sales_tab.country_region_code ORDER BY sales_tab.total_w_tax DESC) AS sales_rank,
+SUM(total_w_tax) OVER (PARTITION BY sales_tab.country_region_code ORDER BY sales_tab.order_month) AS cumulative_sum
+FROM sales_tab
+GROUP BY 1, 2, 3, 4, 5, 6, 7;

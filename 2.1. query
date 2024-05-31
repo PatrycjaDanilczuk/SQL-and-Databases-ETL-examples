@@ -1,0 +1,14 @@
+SELECT
+  DATE_TRUNC(s.OrderDate, MONTH) AS order_month,
+  t.CountryRegionCode AS country_region_code,
+  t.Name AS region_name,
+  COUNT(DISTINCT(SalesOrderID)) AS number_orders,
+  COUNT(DISTINCT(s.CustomerID)) AS number_customers,
+  COUNT(DISTINCT(s.SalesPersonID)) AS no_salesPersons,
+  ROUND(SUM(s.TotalDue)) AS total_w_tax
+FROM `adwentureworks_db.salesorderheader` s
+/* joining with salesterritory table to retrive country and region on PK territoryID*/
+JOIN `adwentureworks_db.salesterritory` t
+ON t.TerritoryID = s.TerritoryID
+/* grouping by order_month, country_region_code, region_name to perform aggregations*/
+GROUP BY 1,2,3;
