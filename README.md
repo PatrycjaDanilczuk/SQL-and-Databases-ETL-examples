@@ -58,5 +58,5 @@ As taxes can vary in country based on province, the needed column is ‘mean_tax
 Also, as not all regions have data on taxes, you also want to be transparent and show the ‘perc_provinces_w_tax’ -> a column representing the percentage of provinces with available tax rates for each country (i.e. If US has 53 provinces, and 10 of them have tax rates, then for US it should show 0,19)
 Hint: If a state has multiple tax rates, choose the higher one. Do not double count a state in country average rate calculation if it has multiple tax rates.
 
-Solution: [2.4. query]
+Solution: [2.4. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/2.4.%20query)
 
