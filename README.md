@@ -39,7 +39,7 @@ Solution: [1.4. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-co
 ### Task 2.1. Sales by territory
 Create a query of monthly sales numbers in each Country & region. Include in the query a number of orders, customers and sales persons in each month with a total amount with tax earned. Sales numbers from all types of customers are required. 
 
-Solution: [2.1. query]
+Solution: [2.1. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/2.1.%20query)
 
 ### Task 2.2. Cumulative sum
 Enrich 2.1 query with the cumulative_sum of the total amount with tax earned per country & region.
