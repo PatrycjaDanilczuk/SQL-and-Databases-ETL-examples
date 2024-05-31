@@ -18,7 +18,7 @@ Solution: [1.1. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-co
 ### Task 1.2. No orders in 365 days
 Get the data from the first query for the top 200 customers with the highest total amount (with tax) who have not ordered for the last 365 days.
 
-Solution: [1.2. query] 
+Solution: [1.2. query](https://github.com/PatrycjaDanilczuk/SQL-and-Databases-codes/blob/main/1.2.%20query)
 
 ### Task 1.3. Active and Inactive customers
 Enrich your original 1.1 SELECT by creating a new column in the view that marks active & inactive customers based on whether they have ordered anything during the last 365 days.
