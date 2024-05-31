@@ -1,0 +1,127 @@
+/* 1.1 solution*/
+
+/* creating ind_customer_tab for selecting individual customers data only; query result 18.484 rows*/
+
+WITH ind_customer_tab AS
+(SELECT
+  CustomerID AS customer_id,
+  CustomerType AS customer_type,
+  AccountNumber AS customer_account_number,
+  TerritoryID AS territory_id
+FROM
+  `adwentureworks_db.customer` customer
+/*filtering out only individual customers (CustomerType 'I')*/
+WHERE
+  CustomerType = 'I'),
+
+/* creating latest_addresID_tab to retrive latest AddressID (using max(addressID)) for individual customers from ind_customers_tab; there are 19.220 distinct addressIDs in CustomerAddress table but 19.185 distinct customerIDs; left join used in case address is not provided; query result 18.484 - result matching ind_custmer_tab*/
+
+latest_addressID_tab AS
+(SELECT
+  ind_customer_tab.customer_id AS customer_id,
+  max(customer_address.AddressID) AS latest_address_id
+FROM ind_customer_tab
+/* joinig with Customaraddress table to retrive latest customer address id*/
+LEFT JOIN `adwentureworks_db.customeraddress` AS customer_address
+ON ind_customer_tab.customer_id = customer_address.CustomerID
+/*grouping by customer_id to retrive table with latest_address_id*/
+GROUP BY customer_id),
+
+/* creating location_info_tab to retrieve address details (city, address, state, country) also tax rate (in case it was necessary for further queries) for latest address ids from latest_addresID_tab; query result 18.484 rows*/
+
+location_info_tab AS
+(SELECT
+  latest_addressID_tab.customer_id AS customer_id,
+  latest_addressID_tab.latest_address_id AS address_id,
+  address.city AS city,
+  address.AddressLine1 AS address_line1,
+  address.AddressLine2 AS address_line2,
+  /* additionally creating full_addres coulumn from addres_line1(no NULLs) and address_line2(containing NULLs) using CONCAT and  COALESCE (to clean NULLs in address_line2; if there is NULL in any concatenated cell CONCAT function returns NULL as a result)*/
+  CONCAT(address.AddressLine1, ' ', COALESCE(address.AddressLine2, '#')) full_address,
+  state_province.name AS state_name,
+  country.name AS country_name,
+  tax_tab.TaxRate as tax_rate
+FROM latest_addressID_tab
+LEFT JOIN `adwentureworks_db.address` address
+/* joining Address table to retrieve city and address on PK AddressID*/
+ON latest_addressID_tab.latest_address_id = address.AddressID
+/* joining StateProvince table to retrieve state_name on PK StateProvinceID*/
+LEFT JOIN `adwentureworks_db.stateprovince`state_province
+ON address.StateProvinceID = state_province.stateProvinceID
+/* joining CountryRegion table to retrieve country_name on PK CountryRegionCode*/
+LEFT JOIN `adwentureworks_db.countryregion` AS country
+ON state_province.CountryRegionCode = country.CountryRegionCode
+/* joining salestaxrate table to retrieve tax rate information*/
+LEFT JOIN `adwentureworks_db.salestaxrate` tax_tab
+ON state_province.StateProvinceID = tax_tab.StateProvinceID),
+
+/* creating identity_info_tab to retrieve first_name, last_name, full_name, title, email, phone; query result 18.484 rows*/
+
+identity_info_tab AS
+(SELECT
+  ind_customer_tab.customer_id AS customer_id,
+  contact.Firstname AS first_name,
+  contact.LastName AS last_name,
+  /* concatenating first_name and last_name to receive full_name column*/
+  CONCAT(contact.Firstname, ' ', contact.LastName) AS full_name,
+  /* retrieving title and if the title is missing - 'Dear'*/
+  COALESCE(contact.title, 'Dear') AS title,
+  contact.Emailaddress AS email,
+  contact.Phone AS phone
+  FROM ind_customer_tab
+  /* joining Individual table to retrieve ContactID for further join with Contact table to retrieve contact information, on PK CustomerID*/
+LEFT JOIN `adwentureworks_db.individual` AS individual
+ON ind_customer_tab.customer_id = individual.CustomerID
+/* joining Contact table to retrieve contact information (first_name, last_name, email, phone, title)*/
+LEFT JOIN `adwentureworks_db.contact` AS contact
+ON individual.ContactID = contact.ContactId),
+
+/* creating sales_tab to retrieve number of orders, total amount, date of last order; query result 18.484*/
+
+sales_tab AS
+(SELECT
+  ind_customer_tab.customer_id,
+  sales.AccountNumber AS account_number,
+  SUM(sales.TotalDue) AS total_due,
+  SUM(sales.SubTotal) AS sub_total,
+  SUM(sales.TaxAmt) AS tax_amt,
+  SUM(sales.SubTotal) + SUM(sales.TaxAmt) AS total_with_tax,
+  count(sales.OrderDate) AS number_of_orders,
+  MAX(sales.OrderDate) AS date_last_order /*checked on subset from Salesorderheader for 3 first customer ids from the resuling table - function works corectly*/
+FROM ind_customer_tab
+/* joining with SalesOrderheader to retrieve sales information on CustomerID*/
+LEFT JOIN `adwentureworks_db.salesorderheader` AS sales
+ON ind_customer_tab.customer_id = sales.customerID
+/* grouping by customer_id and account_number to perform aggregations*/
+GROUP BY 1,2)
+
+/* creating final table from CTE tables: ind_customer_tab, location_info_tab, identity_info_tab and sales_tab; using DISTINCT to remove duplicates - without DISTINCT the query before limiting to 200 returns 18.496 rows, with DISTINCT the result is 18.484 - matching number of distinct ind_customer_ids*/
+
+SELECT DISTINCT
+  ind_customer_tab.customer_id AS customer_id,
+  identity_info_tab.first_name AS first_name,
+  identity_info_tab.last_name AS last_name,
+  identity_info_tab.full_name AS full_name,
+  CONCAT(identity_info_tab.title, ' ', identity_info_tab.last_name) AS addressing_tite,
+  identity_info_tab.email AS email,
+  identity_info_tab.phone AS phone,
+  /* there are two different columns 'account number' in the queried data set: in Customer table and in SalesOrderHeadr table; the type given in the Result Hint table matches the account number from Customer table, hence this column is included in the result table as account number*/
+  ind_customer_tab.customer_account_number AS account_numer,
+  ind_customer_tab.customer_type customer_type,
+  location_info_tab.city AS city,
+  location_info_tab.address_line1 AS address_line1,
+  location_info_tab.address_line2 AS address_line2,
+  location_info_tab.state_name AS state,
+  location_info_tab.country_name AS country,
+  sales_tab.number_of_orders number_of_orders,
+  /* checking Result Hint for the 'total amount (with tax)' - the number matches exactly and only value from TotalDue column from sales table, hence this column is included in the final table as total_amount*/
+  ROUND(sales_tab.total_due, 3) AS total_amount,
+  sales_tab.date_last_order AS date_last_order
+FROM ind_customer_tab
+LEFT JOIN location_info_tab
+ON ind_customer_tab.customer_id = location_info_tab.customer_id
+LEFT JOIN identity_info_tab
+ON identity_info_tab.customer_id = location_info_tab.customer_id
+LEFT JOIN sales_tab
+ON location_info_tab.customer_id = sales_tab.customer_id
+ORDER BY total_amount DESC;
