@@ -1,7 +1,14 @@
 # SQL and Databases ETL examples
 ## Project overview
 This project refers to creating SQL queries to solve specific business questions, based on Adventureworks 2005 database hosted in BigQuery project.
-The schema of the Adventureworks 2005 database can be accessed [here]( https://i0.wp.com/improveandrepeat.com/wp-content/uploads/2018/12/AdvWorksOLTPSchemaVisio.png?ssl=1)
+
+## About the database
+AdwentureWorks is a sample database provided by Microsoft to demonstrate the features and capabilities of SQL Server. 
+The AdventureWorks database includes various tables, views, and stored procedures to represent a fictional company's operations, focusing on manufacturing, sales, purchasing, and other business processes. 
+It provides a realistic dataset for learning and practicing SQL queries, database design, and other database-related tasks.
+
+The schema of AdwentureWorks 2005 database can be accessed [here]( https://drive.google.com/file/d/1-Qsnn3bg0_PYgY5kKJOUDG8xdKLvOLPK/view)
+
 
 ## Tasks
 ### Task 1.1. Customers overview
